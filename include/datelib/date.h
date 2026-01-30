@@ -1,5 +1,4 @@
-#ifndef DATELIB_DATE_H
-#define DATELIB_DATE_H
+#pragma once
 
 #include <string>
 
@@ -12,5 +11,3 @@ namespace datelib {
 std::string hello_world();
 
 } // namespace datelib
-
-#endif // DATELIB_DATE_H
