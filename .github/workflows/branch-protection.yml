@@ -1,0 +1,35 @@
+name: Branch Protection Validation
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  validate-pr:
+    runs-on: ubuntu-latest
+    name: Validate PR Requirements
+    
+    steps:
+      - name: Check PR has at least one review
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: reviews } = await github.rest.pulls.listReviews({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+            
+            const approvedReviews = reviews.filter(review => review.state === 'APPROVED');
+            
+            if (approvedReviews.length < 1) {
+              core.setFailed('This PR requires at least 1 approved review before merging to main.');
+            } else {
+              core.info(`✓ PR has ${approvedReviews.length} approved review(s).`);
+            }
+      
+      - name: Verify branch protection
+        run: |
+          echo "✓ Branch protection workflow executed successfully"
+          echo "This workflow helps enforce that PRs to main require review approval"
