@@ -45,7 +45,15 @@ jobs:
         lcov --capture --directory . --output-file coverage.info
         
         # Remove system headers, test files, and Catch2 from coverage
+        # Note: --ignore-errors unused is used because patterns like '*/_deps/*' 
+        # may not match if dependencies change, but we still want to proceed
         lcov --remove coverage.info '/usr/*' '*/tests/*' '*/_deps/*' --output-file coverage_filtered.info --ignore-errors unused
+        
+        # Verify filtered coverage file exists and is valid
+        if [ ! -s coverage_filtered.info ]; then
+          echo "ERROR: Coverage filtering produced empty or missing file"
+          exit 1
+        fi
         
         # Generate summary
         lcov --list coverage_filtered.info
@@ -53,11 +61,25 @@ jobs:
     - name: Check coverage threshold
       run: |
         cd build
-        # Extract coverage percentage
-        COVERAGE=$(lcov --summary coverage_filtered.info 2>&1 | grep "lines" | awk '{print $2}' | sed 's/%//')
+        # Extract coverage percentage with validation
+        COVERAGE_LINE=$(lcov --summary coverage_filtered.info 2>&1 | grep "^\s*lines")
+        
+        if [ -z "$COVERAGE_LINE" ]; then
+          echo "ERROR: Could not find coverage summary in lcov output"
+          exit 1
+        fi
+        
+        COVERAGE=$(echo "$COVERAGE_LINE" | awk '{print $2}' | sed 's/%//')
+        
+        # Validate that COVERAGE is a valid number
+        if ! [[ "$COVERAGE" =~ ^[0-9]+\.?[0-9]*$ ]]; then
+          echo "ERROR: Extracted coverage value '$COVERAGE' is not a valid number"
+          exit 1
+        fi
+        
         echo "Coverage: $COVERAGE%"
         
-        # Check if coverage is 100% using awk
+        # Check if coverage meets threshold using awk
         THRESHOLD=100
         CHECK=$(awk -v cov="$COVERAGE" -v thr="$THRESHOLD" 'BEGIN { if (cov < thr) print "FAIL"; else print "PASS" }')
         
