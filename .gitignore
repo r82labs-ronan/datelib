@@ -39,3 +39,22 @@
 
 # debug information files
 *.dwo
+
+# Build directories
+build/
+cmake-build-*/
+_builds/
+_codeql_build_dir/
+
+# CMake generated files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+
+# Test results
+Testing/
+CTestTestfile.cmake
+
+# CodeQL files
+_codeql_detected_source_root
