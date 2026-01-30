@@ -17,12 +17,17 @@ Date::Date(int year, int month, int day)
 }
 
 Date::Date() {
-    // Create today's date
+    // Create today's date using thread-safe time functions
     std::time_t t = std::time(nullptr);
-    std::tm* now = std::localtime(&t);
-    year_ = now->tm_year + 1900;
-    month_ = now->tm_mon + 1;
-    day_ = now->tm_mday;
+    std::tm now_tm;
+    #ifdef _WIN32
+        localtime_s(&now_tm, &t);
+    #else
+        localtime_r(&t, &now_tm);
+    #endif
+    year_ = now_tm.tm_year + 1900;
+    month_ = now_tm.tm_mon + 1;
+    day_ = now_tm.tm_mday;
 }
 
 int Date::getYear() const {
