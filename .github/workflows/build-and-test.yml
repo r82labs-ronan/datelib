@@ -57,10 +57,13 @@ jobs:
         COVERAGE=$(lcov --summary coverage_filtered.info 2>&1 | grep "lines" | awk '{print $2}' | sed 's/%//')
         echo "Coverage: $COVERAGE%"
         
-        # Check if coverage is 100%
-        if (( $(echo "$COVERAGE < 100" | bc -l) )); then
-          echo "ERROR: Coverage is $COVERAGE%, which is below the required 100%"
+        # Check if coverage is 100% using awk
+        THRESHOLD=100
+        CHECK=$(awk -v cov="$COVERAGE" -v thr="$THRESHOLD" 'BEGIN { if (cov < thr) print "FAIL"; else print "PASS" }')
+        
+        if [ "$CHECK" = "FAIL" ]; then
+          echo "ERROR: Coverage is $COVERAGE%, which is below the required $THRESHOLD%"
           exit 1
         fi
         
-        echo "SUCCESS: Coverage is $COVERAGE%, meeting the 100% requirement"
+        echo "SUCCESS: Coverage is $COVERAGE%, meeting the $THRESHOLD% requirement"
