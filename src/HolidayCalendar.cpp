@@ -1,7 +1,6 @@
 #include "datelib/HolidayCalendar.h"
 
 #include <algorithm>
-#include <optional>
 
 namespace datelib {
 
@@ -51,7 +50,7 @@ std::vector<year_month_day> HolidayCalendar::getHolidays(int year) const {
     std::vector<year_month_day> holidays;
     holidays.reserve(rules_.size());
 
-    // Collect all holidays from rules using transform_reduce pattern
+    // Collect all holidays from rules
     std::for_each(rules_.begin(), rules_.end(), [&](const auto& rule) {
         try {
             holidays.push_back(rule->calculateDate(year));
