@@ -23,15 +23,10 @@ jobs:
         sudo apt-get install -y cmake clang-format
     
     - name: Configure CMake
-      run: |
-        mkdir -p build
-        cd build
-        cmake ..
+      run: cmake -B build -S .
     
     - name: Check code formatting
-      run: |
-        cd build
-        cmake --build . --target format-check
+      run: cmake --build build --target format-check
 
   build:
     runs-on: ubuntu-latest
