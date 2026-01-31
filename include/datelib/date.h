@@ -50,9 +50,10 @@ enum class BusinessDayConvention {
  * @return true if the date is not a weekend day and not a holiday, false otherwise
  * @throws std::invalid_argument if the date is invalid (e.g., February 30th)
  */
-[[nodiscard]] bool isBusinessDay(const std::chrono::year_month_day& date, const HolidayCalendar& calendar,
-                   const std::unordered_set<std::chrono::weekday, WeekdayHash>& weekend_days = {
-                       std::chrono::Saturday, std::chrono::Sunday});
+[[nodiscard]] bool
+isBusinessDay(const std::chrono::year_month_day& date, const HolidayCalendar& calendar,
+              const std::unordered_set<std::chrono::weekday, WeekdayHash>& weekend_days = {
+                  std::chrono::Saturday, std::chrono::Sunday});
 
 /**
  * @brief Adjust a date according to a business day convention

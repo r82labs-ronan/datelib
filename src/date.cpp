@@ -13,9 +13,9 @@ constexpr int MAX_DAYS_TO_SEARCH = 366;
 /**
  * @brief Move forward to the next business day
  */
-std::chrono::year_month_day moveToNextBusinessDay(
-    const std::chrono::year_month_day& start, const HolidayCalendar& calendar,
-    const std::unordered_set<std::chrono::weekday, WeekdayHash>& weekend_days) {
+std::chrono::year_month_day
+moveToNextBusinessDay(const std::chrono::year_month_day& start, const HolidayCalendar& calendar,
+                      const std::unordered_set<std::chrono::weekday, WeekdayHash>& weekend_days) {
     auto adjusted = std::chrono::sys_days{start};
     std::chrono::year_month_day adjusted_ymd{adjusted};
     int iterations = 0;
