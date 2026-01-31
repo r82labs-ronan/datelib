@@ -1,4 +1,4 @@
-#include "datelib/HolidayCalendar.h"
+#include "datelib/holiday_calendar.h"
 
 #include "catch2/catch.hpp"
 

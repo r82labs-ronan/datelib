@@ -1,4 +1,4 @@
-#include "datelib/HolidayRule.h"
+#include "datelib/holiday_rule.h"
 
 #include <stdexcept>
 

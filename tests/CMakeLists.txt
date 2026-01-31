@@ -1,5 +1,5 @@
 # Test executable
-add_executable(test_datelib test_date.cpp test_HolidayRule.cpp test_HolidayCalendar.cpp)
+add_executable(test_datelib test_date.cpp test_holiday_rule.cpp test_holiday_calendar.cpp)
 
 # Link libraries
 target_link_libraries(test_datelib PRIVATE datelib Catch2::Catch2)
