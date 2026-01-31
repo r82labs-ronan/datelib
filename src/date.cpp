@@ -112,8 +112,9 @@ adjust(const std::chrono::year_month_day& date, BusinessDayConvention convention
         return date;
     }
 
-    // Should never reach here (all enum values handled above)
-    return date;
+    // This should never be reached as all enum values are handled above
+    // If we reach here, it's a logic error (e.g., uninitialized enum)
+    throw std::logic_error("Unhandled BusinessDayConvention in adjust()");
 }
 
 } // namespace datelib

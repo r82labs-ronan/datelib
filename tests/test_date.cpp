@@ -516,3 +516,15 @@ TEST_CASE("adjust with custom weekend days", "[adjust][configurable]") {
         REQUIRE(adjusted == year_month_day{year{2024}, month{1}, day{4}});
     }
 }
+
+TEST_CASE("adjust with invalid enum value", "[adjust][edge_cases]") {
+    datelib::HolidayCalendar calendar;
+    // Use a weekend (Saturday) to ensure it's not a business day
+    auto date = year_month_day{year{2024}, month{1}, day{6}};
+
+    SECTION("Invalid convention value throws logic_error") {
+        // Force an invalid enum value by casting
+        auto invalid_convention = static_cast<datelib::BusinessDayConvention>(999);
+        REQUIRE_THROWS_AS(datelib::adjust(date, invalid_convention, calendar), std::logic_error);
+    }
+}
