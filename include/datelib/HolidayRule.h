@@ -42,17 +42,44 @@ class HolidayRule {
 
 /**
  * @brief Rule for an explicit date that is always a holiday
- * Example: One-time holidays or non-recurring dates
+ *
+ * ExplicitDateRule represents a one-time or non-recurring holiday on a specific date.
+ * Unlike FixedDateRule which recurs annually, ExplicitDateRule only applies to the
+ * exact year specified in the date.
+ *
+ * Example usage:
+ * @code
+ *   // Add a one-time holiday for a solar eclipse in 2024
+ *   calendar.addHoliday("Solar Eclipse", year_month_day{year{2024}, month{4}, day{8}});
+ *
+ *   // Multiple explicit holidays can be added for the same year
+ *   calendar.addHoliday("Company Anniversary", year_month_day{year{2024}, month{6}, day{15}});
+ *
+ *   // Each ExplicitDateRule only applies to its specific year
+ *   calendar.isHoliday(year_month_day{year{2024}, month{4}, day{8}}); // true
+ *   calendar.isHoliday(year_month_day{year{2025}, month{4}, day{8}}); // false
+ * @endcode
+ *
+ * When calculateDate(year) is called:
+ * - If year matches the stored date's year, returns the date
+ * - Otherwise throws std::runtime_error (caught by HolidayCalendar methods)
  */
 class ExplicitDateRule : public HolidayRule {
   public:
     /**
      * @brief Construct an explicit date holiday rule
      * @param name The name of the holiday
-     * @param date The specific date
+     * @param date The specific date (including year, month, and day)
+     * @throws std::invalid_argument if the date is invalid
      */
     ExplicitDateRule(std::string name, std::chrono::year_month_day date);
 
+    /**
+     * @brief Calculate the holiday date for a given year
+     * @param year The year to calculate the holiday for
+     * @return The stored date if the year matches
+     * @throws std::runtime_error if the year doesn't match the stored date's year
+     */
     std::chrono::year_month_day calculateDate(int year) const override;
     std::string getName() const override { return name_; }
     std::unique_ptr<HolidayRule> clone() const override;

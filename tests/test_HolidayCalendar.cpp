@@ -31,6 +31,33 @@ TEST_CASE("HolidayCalendar with explicit dates", "[HolidayCalendar]") {
         REQUIRE(holidays[1] == year_month_day{year{2024}, month{7}, day{4}});
         REQUIRE(holidays[2] == year_month_day{year{2024}, month{12}, day{25}});
     }
+
+    SECTION("Multiple explicit rules for same year") {
+        // Example: Adding multiple one-time holidays for 2024
+        // Each ExplicitDateRule is independent and can be queried
+        calendar.addHoliday("Eclipse Day", year_month_day{year{2024}, month{4}, day{8}});
+        calendar.addHoliday("Company Anniversary", year_month_day{year{2024}, month{6}, day{15}});
+        calendar.addHoliday("Special Event", year_month_day{year{2024}, month{9}, day{20}});
+
+        // All three holidays are recognized for 2024
+        REQUIRE(calendar.isHoliday(year_month_day{year{2024}, month{4}, day{8}}));
+        REQUIRE(calendar.isHoliday(year_month_day{year{2024}, month{6}, day{15}}));
+        REQUIRE(calendar.isHoliday(year_month_day{year{2024}, month{9}, day{20}}));
+
+        // getHolidays returns all explicit holidays for that year
+        auto holidays2024 = calendar.getHolidays(2024);
+        REQUIRE(holidays2024.size() == 3);
+
+        // getHolidayNames returns the name of each explicit holiday
+        auto names = calendar.getHolidayNames(year_month_day{year{2024}, month{4}, day{8}});
+        REQUIRE(names.size() == 1);
+        REQUIRE(names[0] == "Eclipse Day");
+
+        // Querying for a different year returns no holidays (explicit rules only apply to their
+        // specific year)
+        auto holidays2025 = calendar.getHolidays(2025);
+        REQUIRE(holidays2025.empty());
+    }
 }
 
 TEST_CASE("HolidayCalendar with rules", "[HolidayCalendar]") {
