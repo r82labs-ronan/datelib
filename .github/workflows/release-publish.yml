@@ -166,3 +166,4 @@ jobs:
   generate-docs:
     needs: publish
     uses: ./.github/workflows/generate-docs.yml
+    secrets: inherit
