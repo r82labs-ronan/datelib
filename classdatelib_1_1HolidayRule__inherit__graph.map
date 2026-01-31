@@ -1,0 +1,9 @@
+<map id="datelib::HolidayRule" name="datelib::HolidayRule">
+<area shape="rect" id="Node000001" title="Abstract base class for holiday calculation rules." alt="" coords="219,5,374,31"/>
+<area shape="rect" id="Node000002" href="$classdatelib_1_1ExplicitDateRule.html" title="Rule for an explicit date that is always a holiday." alt="" coords="5,79,188,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="252,38,130,81,128,76,251,33"/>
+<area shape="rect" id="Node000003" href="$classdatelib_1_1FixedDateRule.html" title="Rule for holidays that occur on a fixed date each year Example: Christmas (December 25),..." alt="" coords="212,79,381,104"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="299,44,299,79,294,79,294,44"/>
+<area shape="rect" id="Node000004" href="$classdatelib_1_1NthWeekdayRule.html" title="Rule for holidays that occur on the Nth occurrence of a weekday in a month Example: Thanksgiving (4th..." alt="" coords="406,79,593,104"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="343,33,467,76,466,81,341,38"/>
+</map>

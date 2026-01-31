@@ -1,0 +1,9 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" href="$classdatelib_1_1HolidayRule.html" title="Abstract base class for holiday calculation rules." alt="" coords="5,55,160,80"/>
+<area shape="rect" id="Node000001" href="$classdatelib_1_1ExplicitDateRule.html" title="Rule for an explicit date that is always a holiday." alt="" coords="210,5,393,31"/>
+<area shape="poly" id="edge1_Node000000_Node000001" title=" " alt="" coords="152,49,244,28,245,33,153,54"/>
+<area shape="rect" id="Node000002" href="$classdatelib_1_1FixedDateRule.html" title="Rule for holidays that occur on a fixed date each year Example: Christmas (December 25),..." alt="" coords="217,55,386,80"/>
+<area shape="poly" id="edge2_Node000000_Node000002" title=" " alt="" coords="174,65,216,65,216,70,174,70"/>
+<area shape="rect" id="Node000003" href="$classdatelib_1_1NthWeekdayRule.html" title="Rule for holidays that occur on the Nth occurrence of a weekday in a month Example: Thanksgiving (4th..." alt="" coords="208,104,395,129"/>
+<area shape="poly" id="edge3_Node000000_Node000003" title=" " alt="" coords="153,80,245,101,244,107,152,86"/>
+</map>

@@ -1,0 +1,5 @@
+<map id="datelib::NthWeekdayRule" name="datelib::NthWeekdayRule">
+<area shape="rect" id="Node000001" title="Rule for holidays that occur on the Nth occurrence of a weekday in a month Example: Thanksgiving (4th..." alt="" coords="5,79,192,104"/>
+<area shape="rect" id="Node000002" href="$classdatelib_1_1HolidayRule.html" title="Abstract base class for holiday calculation rules." alt="" coords="21,5,176,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="101,44,101,79,96,79,96,44"/>
+</map>

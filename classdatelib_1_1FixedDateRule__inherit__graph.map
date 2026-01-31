@@ -1,0 +1,5 @@
+<map id="datelib::FixedDateRule" name="datelib::FixedDateRule">
+<area shape="rect" id="Node000001" title="Rule for holidays that occur on a fixed date each year Example: Christmas (December 25),..." alt="" coords="5,79,175,104"/>
+<area shape="rect" id="Node000002" href="$classdatelib_1_1HolidayRule.html" title="Abstract base class for holiday calculation rules." alt="" coords="13,5,167,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="93,44,93,79,87,79,87,44"/>
+</map>
