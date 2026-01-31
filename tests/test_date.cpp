@@ -160,3 +160,92 @@ TEST_CASE("isBusinessDay real-world scenario", "[isBusinessDay]") {
                                              usHolidays)); // Sunday
     }
 }
+
+TEST_CASE("isBusinessDay with invalid dates", "[isBusinessDay][edge_cases]") {
+    datelib::HolidayCalendar calendar;
+
+    SECTION("Invalid dates should throw") {
+        // February 30th (invalid)
+        REQUIRE_THROWS_AS(
+            datelib::isBusinessDay(year_month_day{year{2024}, month{2}, day{30}}, calendar),
+            std::invalid_argument);
+
+        // April 31st (invalid)
+        REQUIRE_THROWS_AS(
+            datelib::isBusinessDay(year_month_day{year{2024}, month{4}, day{31}}, calendar),
+            std::invalid_argument);
+
+        // February 29 on non-leap year
+        REQUIRE_THROWS_AS(
+            datelib::isBusinessDay(year_month_day{year{2023}, month{2}, day{29}}, calendar),
+            std::invalid_argument);
+
+        // Day 0 (invalid)
+        REQUIRE_THROWS_AS(
+            datelib::isBusinessDay(year_month_day{year{2024}, month{1}, day{0}}, calendar),
+            std::invalid_argument);
+    }
+}
+
+TEST_CASE("isBusinessDay with leap year dates", "[isBusinessDay][edge_cases]") {
+    datelib::HolidayCalendar calendar;
+
+    SECTION("February 29 on leap years") {
+        // 2024 is a leap year (divisible by 4)
+        // February 29, 2024 is a Thursday
+        REQUIRE(datelib::isBusinessDay(year_month_day{year{2024}, month{2}, day{29}}, calendar));
+
+        // 2000 was a leap year (divisible by 400)
+        // February 29, 2000 was a Tuesday
+        REQUIRE(datelib::isBusinessDay(year_month_day{year{2000}, month{2}, day{29}}, calendar));
+    }
+
+    SECTION("Century years that are NOT leap years") {
+        // 1900 was NOT a leap year (divisible by 100 but not 400)
+        // February 29, 1900 is INVALID
+        REQUIRE_THROWS_AS(
+            datelib::isBusinessDay(year_month_day{year{1900}, month{2}, day{29}}, calendar),
+            std::invalid_argument);
+
+        // 2100 will NOT be a leap year
+        REQUIRE_THROWS_AS(
+            datelib::isBusinessDay(year_month_day{year{2100}, month{2}, day{29}}, calendar),
+            std::invalid_argument);
+    }
+}
+
+TEST_CASE("isBusinessDay across year boundaries", "[isBusinessDay][edge_cases]") {
+    datelib::HolidayCalendar calendar;
+
+    SECTION("Last day of year") {
+        // December 31, 2024 is a Tuesday
+        REQUIRE(datelib::isBusinessDay(year_month_day{year{2024}, month{12}, day{31}}, calendar));
+
+        // December 31, 2023 was a Sunday
+        REQUIRE_FALSE(
+            datelib::isBusinessDay(year_month_day{year{2023}, month{12}, day{31}}, calendar));
+    }
+
+    SECTION("First day of year") {
+        // January 1, 2025 is a Wednesday
+        REQUIRE(datelib::isBusinessDay(year_month_day{year{2025}, month{1}, day{1}}, calendar));
+    }
+}
+
+TEST_CASE("isBusinessDay with holidays falling on weekends", "[isBusinessDay][edge_cases]") {
+    datelib::HolidayCalendar calendar;
+    calendar.addRule(std::make_unique<datelib::FixedDateRule>("Christmas", 12, 25));
+
+    SECTION("Holiday on Saturday") {
+        // December 25, 2021 was a Saturday (Christmas)
+        // It's both a weekend AND a holiday
+        REQUIRE_FALSE(
+            datelib::isBusinessDay(year_month_day{year{2021}, month{12}, day{25}}, calendar));
+    }
+
+    SECTION("Holiday on Sunday") {
+        // December 25, 2022 was a Sunday (Christmas)
+        REQUIRE_FALSE(
+            datelib::isBusinessDay(year_month_day{year{2022}, month{12}, day{25}}, calendar));
+    }
+}

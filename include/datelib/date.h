@@ -19,6 +19,7 @@ std::string hello_world();
  * @param date The date to check
  * @param calendar The holiday calendar to use for checking holidays
  * @return true if the date is a weekday (Monday-Friday) and not a holiday, false otherwise
+ * @throws std::invalid_argument if the date is invalid (e.g., February 30th)
  */
 bool isBusinessDay(const std::chrono::year_month_day& date, const HolidayCalendar& calendar);
 
