@@ -57,6 +57,13 @@ TEST_CASE("HolidayCalendar with explicit dates", "[HolidayCalendar]") {
         // specific year)
         auto holidays2025 = calendar.getHolidays(2025);
         REQUIRE(holidays2025.empty());
+
+        // Test isHoliday with explicit date from different year (triggers exception path)
+        REQUIRE_FALSE(calendar.isHoliday(year_month_day{year{2025}, month{4}, day{8}}));
+
+        // Test getHolidayNames with explicit date from different year (triggers exception path)
+        auto names2025 = calendar.getHolidayNames(year_month_day{year{2025}, month{4}, day{8}});
+        REQUIRE(names2025.empty());
     }
 }
 

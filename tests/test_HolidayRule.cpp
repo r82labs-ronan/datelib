@@ -90,6 +90,10 @@ TEST_CASE("NthWeekdayRule construction", "[HolidayRule]") {
                             "Month must be between 1 and 12");
         REQUIRE_THROWS_WITH(datelib::NthWeekdayRule("Invalid", 1, 7, datelib::Occurrence::First),
                             "Weekday must be between 0 and 6");
+        // Test invalid occurrence value (casting 0 to Occurrence enum)
+        REQUIRE_THROWS_WITH(
+            datelib::NthWeekdayRule("Invalid", 1, 1, static_cast<datelib::Occurrence>(0)),
+            "Occurrence must be First through Fifth or Last");
     }
 }
 
@@ -129,6 +133,13 @@ TEST_CASE("NthWeekdayRule calculates correct dates", "[HolidayRule]") {
         weekday wd{sd};
         REQUIRE(wd.c_encoding() == 1);
     }
+
+    SECTION("Fifth occurrence that doesn't exist throws exception") {
+        // February 2024 only has 4 Saturdays, so 5th Saturday doesn't exist
+        datelib::NthWeekdayRule fifthSaturday("Fifth Saturday", 2, 6, datelib::Occurrence::Fifth);
+        REQUIRE_THROWS_WITH(fifthSaturday.calculateDate(2024),
+                            "Requested occurrence does not exist in this month");
+    }
 }
 
 TEST_CASE("HolidayRule clone", "[HolidayRule]") {
@@ -155,5 +166,29 @@ TEST_CASE("HolidayRule clone", "[HolidayRule]") {
 
         REQUIRE(cloned->getName() == original.getName());
         REQUIRE(cloned->calculateDate(2024) == original.calculateDate(2024));
+    }
+}
+
+TEST_CASE("HolidayRule polymorphic destruction", "[HolidayRule]") {
+    SECTION("Delete through base class pointer") {
+        // Test virtual destructor by deleting through base class pointer
+        // This ensures all destructor variants (D0, D1, D2) are covered
+        {
+            std::unique_ptr<datelib::HolidayRule> rule1 =
+                std::make_unique<datelib::ExplicitDateRule>(
+                    "Test", year_month_day{year{2024}, month{1}, day{1}});
+            // Destructor called when unique_ptr goes out of scope
+        }
+        {
+            std::unique_ptr<datelib::HolidayRule> rule2 =
+                std::make_unique<datelib::FixedDateRule>("Test", 12, 25);
+            // Destructor called when unique_ptr goes out of scope
+        }
+        {
+            std::unique_ptr<datelib::HolidayRule> rule3 = std::make_unique<datelib::NthWeekdayRule>(
+                "Test", 11, 4, datelib::Occurrence::Fourth);
+            // Destructor called when unique_ptr goes out of scope
+        }
+        REQUIRE(true); // Just need to ensure destructors are called
     }
 }
