@@ -38,16 +38,7 @@ bool HolidayCalendar::isHoliday(const year_month_day& date) const {
     int year = static_cast<int>(date.year());
 
     return std::any_of(rules_.begin(), rules_.end(), [&](const auto& rule) {
-        if (!rule->appliesTo(year)) {
-            return false;
-        }
-        try {
-            return rule->calculateDate(year) == date;
-        } catch (const std::exception&) {
-            // If calculateDate throws despite appliesTo being true,
-            // treat as not matching this rule
-            return false;
-        }
+        return rule->appliesTo(year) && rule->calculateDate(year) == date;
     });
 }
 
