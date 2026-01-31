@@ -72,8 +72,9 @@ jobs:
           echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
           echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
-      - name: Update version in CMakeLists.txt
+      - name: Update version in CMakeLists.txt and sonar-project.properties
         run: |
+          # Update CMakeLists.txt
           sed -i 's/VERSION ${{ steps.version.outputs.current_version }}/VERSION ${{ steps.version.outputs.new_version }}/' CMakeLists.txt
 
           # Verify the change
@@ -83,6 +84,19 @@ jobs:
           fi
 
           echo "Updated CMakeLists.txt to version ${{ steps.version.outputs.new_version }}"
+
+          # Update sonar-project.properties if it exists
+          if [ -f sonar-project.properties ]; then
+            sed -i 's/sonar.projectVersion=${{ steps.version.outputs.current_version }}/sonar.projectVersion=${{ steps.version.outputs.new_version }}/' sonar-project.properties
+
+            # Verify the change
+            if ! grep -q "sonar.projectVersion=${{ steps.version.outputs.new_version }}" sonar-project.properties; then
+              echo "ERROR: Failed to update version in sonar-project.properties"
+              exit 1
+            fi
+
+            echo "Updated sonar-project.properties to version ${{ steps.version.outputs.new_version }}"
+          fi
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
@@ -97,7 +111,9 @@ jobs:
           body: |
             Automated version bump to ${{ steps.version.outputs.new_version }} (${{ inputs.bump_type }} release)
             
-            This PR bumps the version in CMakeLists.txt from ${{ steps.version.outputs.current_version }} to ${{ steps.version.outputs.new_version }}.
+            This PR bumps the version from ${{ steps.version.outputs.current_version }} to ${{ steps.version.outputs.new_version }} in:
+            - CMakeLists.txt
+            - sonar-project.properties (if present)
             
             After merging, the release will be automatically published by the release-publish workflow.
           labels: release
