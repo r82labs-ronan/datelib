@@ -4,8 +4,30 @@
 
 namespace datelib {
 
+using namespace std::chrono;
+
+// ExplicitDateRule implementation
+ExplicitDateRule::ExplicitDateRule(std::string name, year_month_day date)
+    : name_(std::move(name)), date_(date) {
+    if (!date_.ok()) {
+        throw std::invalid_argument("Invalid date");
+    }
+}
+
+year_month_day ExplicitDateRule::calculateDate(int year) const {
+    // Only return the date if it matches the requested year
+    if (static_cast<int>(date_.year()) == year) {
+        return date_;
+    }
+    throw std::runtime_error("Explicit date does not exist in this year");
+}
+
+std::unique_ptr<HolidayRule> ExplicitDateRule::clone() const {
+    return std::make_unique<ExplicitDateRule>(name_, date_);
+}
+
 // FixedDateRule implementation
-FixedDateRule::FixedDateRule(std::string name, int month, int day)
+FixedDateRule::FixedDateRule(std::string name, unsigned month, unsigned day)
     : name_(std::move(name)), month_(month), day_(day) {
     if (month < 1 || month > 12) {
         throw std::invalid_argument("Month must be between 1 and 12");
@@ -15,21 +37,27 @@ FixedDateRule::FixedDateRule(std::string name, int month, int day)
     }
 }
 
-Date FixedDateRule::calculateDate(int year) const {
-    return Date(year, month_, day_);
+year_month_day FixedDateRule::calculateDate(int year) const {
+    year_month_day ymd{std::chrono::year{year}, month_, day_};
+    if (!ymd.ok()) {
+        throw std::runtime_error("Invalid date for this year");
+    }
+    return ymd;
 }
 
 std::unique_ptr<HolidayRule> FixedDateRule::clone() const {
-    return std::make_unique<FixedDateRule>(name_, month_, day_);
+    return std::make_unique<FixedDateRule>(name_, static_cast<unsigned>(month_),
+                                           static_cast<unsigned>(day_));
 }
 
 // NthWeekdayRule implementation
-NthWeekdayRule::NthWeekdayRule(std::string name, int month, int weekday, int occurrence)
-    : name_(std::move(name)), month_(month), weekday_(weekday), occurrence_(occurrence) {
+NthWeekdayRule::NthWeekdayRule(std::string name, unsigned month, unsigned weekday_val,
+                               int occurrence)
+    : name_(std::move(name)), month_(month), weekday_(weekday_val), occurrence_(occurrence) {
     if (month < 1 || month > 12) {
         throw std::invalid_argument("Month must be between 1 and 12");
     }
-    if (weekday < 0 || weekday > 6) {
+    if (weekday_val > 6) {
         throw std::invalid_argument("Weekday must be between 0 and 6");
     }
     if (occurrence == 0 || occurrence < -1 || occurrence > 5) {
@@ -37,56 +65,51 @@ NthWeekdayRule::NthWeekdayRule(std::string name, int month, int weekday, int occ
     }
 }
 
-Date NthWeekdayRule::calculateDate(int year) const {
-    // Find the first day of the month
-    Date firstDay(year, month_, 1);
-    int firstWeekday = firstDay.dayOfWeek();
+year_month_day NthWeekdayRule::calculateDate(int year) const {
+    // Get the first day of the month
+    year_month_day first_of_month{std::chrono::year{year}, month_, day{1}};
 
-    // Calculate which day of month the first occurrence of our target weekday
-    // is
-    int daysToAdd = (weekday_ - firstWeekday + 7) % 7;
-    int firstOccurrenceDay = 1 + daysToAdd;
-
-    // Helper lambda to get days in month (same as Date::daysInMonth logic)
-    auto getDaysInMonth = [](int y, int m) -> int {
-        static const int days[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-        int result = days[m - 1];
-        if (m == 2 && ((y % 4 == 0) && ((y % 100 != 0) || (y % 400 == 0)))) {
-            result = 29;
-        }
-        return result;
-    };
+    // Convert to sys_days to work with weekdays
+    sys_days first_sd{first_of_month};
+    weekday first_weekday{first_sd};
 
     if (occurrence_ > 0) {
-        // Nth occurrence from the start
-        int targetDay = firstOccurrenceDay + (occurrence_ - 1) * 7;
+        // Find the Nth occurrence of the target weekday
+        // Calculate days to add to get to first occurrence of target weekday
+        int days_to_first = (weekday_.c_encoding() - first_weekday.c_encoding() + 7) % 7;
 
-        // Validate that this day exists in the month
-        int daysInMonth = getDaysInMonth(year, month_);
+        // Add weeks to get to the Nth occurrence
+        sys_days target_sd = first_sd + days{days_to_first + (occurrence_ - 1) * 7};
+        year_month_day result{target_sd};
 
-        if (targetDay > daysInMonth) {
+        // Verify we're still in the same month
+        if (result.month() != month_) {
             throw std::runtime_error("Requested occurrence does not exist in this month");
         }
 
-        return Date(year, month_, targetDay);
+        return result;
     } else {
         // Last occurrence (occurrence_ == -1)
-        // Start from the last day of the month and work backwards
-        int daysInMonth = getDaysInMonth(year, month_);
+        // Get the last day of the month
+        year_month_day_last last_of_month{std::chrono::year{year}, month_day_last{month_}};
+        year_month_day last_day{last_of_month};
 
-        Date lastDay(year, month_, daysInMonth);
-        int lastWeekday = lastDay.dayOfWeek();
+        sys_days last_sd{last_day};
+        weekday last_weekday{last_sd};
 
-        // Calculate how many days to go back to find the last occurrence
-        int daysToSubtract = (lastWeekday - weekday_ + 7) % 7;
-        int lastOccurrenceDay = daysInMonth - daysToSubtract;
+        // Calculate days to subtract to get to last occurrence of target weekday
+        int days_to_subtract = (last_weekday.c_encoding() - weekday_.c_encoding() + 7) % 7;
 
-        return Date(year, month_, lastOccurrenceDay);
+        sys_days target_sd = last_sd - days{days_to_subtract};
+        year_month_day result{target_sd};
+
+        return result;
     }
 }
 
 std::unique_ptr<HolidayRule> NthWeekdayRule::clone() const {
-    return std::make_unique<NthWeekdayRule>(name_, month_, weekday_, occurrence_);
+    return std::make_unique<NthWeekdayRule>(name_, static_cast<unsigned>(month_),
+                                            weekday_.c_encoding(), occurrence_);
 }
 
 } // namespace datelib

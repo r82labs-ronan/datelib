@@ -1,18 +1,16 @@
 #pragma once
 
-#include "datelib/Date.h"
 #include "datelib/HolidayRule.h"
 
+#include <chrono>
 #include <memory>
-#include <set>
 #include <string>
 #include <vector>
 
 namespace datelib {
 
 /**
- * @brief A calendar that manages holidays using explicit dates and/or
- * rule-based generation
+ * @brief A calendar that manages holidays using rule-based generation
  */
 class HolidayCalendar {
   public:
@@ -43,9 +41,10 @@ class HolidayCalendar {
 
     /**
      * @brief Add an explicit holiday date
+     * @param name The name of the holiday
      * @param date The date to mark as a holiday
      */
-    void addHoliday(const Date& date);
+    void addHoliday(const std::string& name, const std::chrono::year_month_day& date);
 
     /**
      * @brief Add a rule for generating holidays
@@ -58,21 +57,21 @@ class HolidayCalendar {
      * @param date The date to check
      * @return true if the date is a holiday, false otherwise
      */
-    bool isHoliday(const Date& date) const;
+    bool isHoliday(const std::chrono::year_month_day& date) const;
 
     /**
      * @brief Get all holidays for a given year
      * @param year The year to get holidays for
      * @return A sorted vector of all holiday dates in that year
      */
-    std::vector<Date> getHolidays(int year) const;
+    std::vector<std::chrono::year_month_day> getHolidays(int year) const;
 
     /**
      * @brief Get the names of all holidays on a given date
      * @param date The date to check
      * @return A vector of holiday names for that date
      */
-    std::vector<std::string> getHolidayNames(const Date& date) const;
+    std::vector<std::string> getHolidayNames(const std::chrono::year_month_day& date) const;
 
     /**
      * @brief Clear all holidays and rules
@@ -80,7 +79,6 @@ class HolidayCalendar {
     void clear();
 
   private:
-    std::set<Date> explicitHolidays_;
     std::vector<std::unique_ptr<HolidayRule>> rules_;
 };
 

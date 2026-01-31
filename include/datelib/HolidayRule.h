@@ -1,7 +1,6 @@
 #pragma once
 
-#include "datelib/Date.h"
-
+#include <chrono>
 #include <memory>
 #include <string>
 #include <vector>
@@ -21,7 +20,7 @@ class HolidayRule {
      * @return The date of the holiday in that year
      * @throws std::exception if the rule cannot be applied to this year
      */
-    virtual Date calculateDate(int year) const = 0;
+    virtual std::chrono::year_month_day calculateDate(int year) const = 0;
 
     /**
      * @brief Get the name of this holiday
@@ -37,6 +36,28 @@ class HolidayRule {
 };
 
 /**
+ * @brief Rule for an explicit date that is always a holiday
+ * Example: One-time holidays or non-recurring dates
+ */
+class ExplicitDateRule : public HolidayRule {
+  public:
+    /**
+     * @brief Construct an explicit date holiday rule
+     * @param name The name of the holiday
+     * @param date The specific date
+     */
+    ExplicitDateRule(std::string name, std::chrono::year_month_day date);
+
+    std::chrono::year_month_day calculateDate(int year) const override;
+    std::string getName() const override { return name_; }
+    std::unique_ptr<HolidayRule> clone() const override;
+
+  private:
+    std::string name_;
+    std::chrono::year_month_day date_;
+};
+
+/**
  * @brief Rule for holidays that occur on a fixed date each year
  * Example: Christmas (December 25), New Year's Day (January 1)
  */
@@ -48,16 +69,16 @@ class FixedDateRule : public HolidayRule {
      * @param month The month (1-12)
      * @param day The day of month (1-31)
      */
-    FixedDateRule(std::string name, int month, int day);
+    FixedDateRule(std::string name, unsigned month, unsigned day);
 
-    Date calculateDate(int year) const override;
+    std::chrono::year_month_day calculateDate(int year) const override;
     std::string getName() const override { return name_; }
     std::unique_ptr<HolidayRule> clone() const override;
 
   private:
     std::string name_;
-    int month_;
-    int day_;
+    std::chrono::month month_;
+    std::chrono::day day_;
 };
 
 /**
@@ -74,16 +95,16 @@ class NthWeekdayRule : public HolidayRule {
      * @param weekday The day of week (0=Sunday, 6=Saturday)
      * @param occurrence Which occurrence (1=first, 2=second, -1=last)
      */
-    NthWeekdayRule(std::string name, int month, int weekday, int occurrence);
+    NthWeekdayRule(std::string name, unsigned month, unsigned weekday, int occurrence);
 
-    Date calculateDate(int year) const override;
+    std::chrono::year_month_day calculateDate(int year) const override;
     std::string getName() const override { return name_; }
     std::unique_ptr<HolidayRule> clone() const override;
 
   private:
     std::string name_;
-    int month_;
-    int weekday_;    // 0=Sunday, 6=Saturday
+    std::chrono::month month_;
+    std::chrono::weekday weekday_;
     int occurrence_; // 1=first, 2=second, ..., -1=last
 };
 

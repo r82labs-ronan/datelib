@@ -2,6 +2,8 @@
 
 #include "catch2/catch.hpp"
 
+using namespace std::chrono;
+
 TEST_CASE("HolidayCalendar construction", "[HolidayCalendar]") {
     REQUIRE_NOTHROW(datelib::HolidayCalendar());
 }
@@ -10,24 +12,24 @@ TEST_CASE("HolidayCalendar with explicit dates", "[HolidayCalendar]") {
     datelib::HolidayCalendar calendar;
 
     SECTION("Add and check explicit holiday") {
-        datelib::Date newYear(2024, 1, 1);
-        calendar.addHoliday(newYear);
+        year_month_day newYear{year{2024}, month{1}, day{1}};
+        calendar.addHoliday("New Year's Day 2024", newYear);
 
         REQUIRE(calendar.isHoliday(newYear));
-        REQUIRE_FALSE(calendar.isHoliday(datelib::Date(2024, 1, 2)));
+        REQUIRE_FALSE(calendar.isHoliday(year_month_day{year{2024}, month{1}, day{2}}));
     }
 
     SECTION("Get holidays for a year with explicit dates") {
-        calendar.addHoliday(datelib::Date(2024, 1, 1));
-        calendar.addHoliday(datelib::Date(2024, 7, 4));
-        calendar.addHoliday(datelib::Date(2024, 12, 25));
-        calendar.addHoliday(datelib::Date(2025, 1, 1)); // Different year
+        calendar.addHoliday("New Year", year_month_day{year{2024}, month{1}, day{1}});
+        calendar.addHoliday("Independence Day", year_month_day{year{2024}, month{7}, day{4}});
+        calendar.addHoliday("Christmas", year_month_day{year{2024}, month{12}, day{25}});
+        calendar.addHoliday("Different Year", year_month_day{year{2025}, month{1}, day{1}});
 
         auto holidays = calendar.getHolidays(2024);
         REQUIRE(holidays.size() == 3);
-        REQUIRE(holidays[0] == datelib::Date(2024, 1, 1));
-        REQUIRE(holidays[1] == datelib::Date(2024, 7, 4));
-        REQUIRE(holidays[2] == datelib::Date(2024, 12, 25));
+        REQUIRE(holidays[0] == year_month_day{year{2024}, month{1}, day{1}});
+        REQUIRE(holidays[1] == year_month_day{year{2024}, month{7}, day{4}});
+        REQUIRE(holidays[2] == year_month_day{year{2024}, month{12}, day{25}});
     }
 }
 
@@ -37,9 +39,9 @@ TEST_CASE("HolidayCalendar with rules", "[HolidayCalendar]") {
     SECTION("Add and check rule-based holiday") {
         calendar.addRule(std::make_unique<datelib::FixedDateRule>("Christmas", 12, 25));
 
-        REQUIRE(calendar.isHoliday(datelib::Date(2024, 12, 25)));
-        REQUIRE(calendar.isHoliday(datelib::Date(2025, 12, 25)));
-        REQUIRE_FALSE(calendar.isHoliday(datelib::Date(2024, 12, 24)));
+        REQUIRE(calendar.isHoliday(year_month_day{year{2024}, month{12}, day{25}}));
+        REQUIRE(calendar.isHoliday(year_month_day{year{2025}, month{12}, day{25}}));
+        REQUIRE_FALSE(calendar.isHoliday(year_month_day{year{2024}, month{12}, day{24}}));
     }
 
     SECTION("Multiple rules") {
@@ -51,28 +53,28 @@ TEST_CASE("HolidayCalendar with rules", "[HolidayCalendar]") {
         REQUIRE(holidays.size() == 3);
 
         // Verify they're sorted
-        REQUIRE(holidays[0] == datelib::Date(2024, 1, 1));
-        REQUIRE(holidays[1] == datelib::Date(2024, 11, 28)); // Thanksgiving
-        REQUIRE(holidays[2] == datelib::Date(2024, 12, 25));
+        REQUIRE(holidays[0] == year_month_day{year{2024}, month{1}, day{1}});
+        REQUIRE(holidays[1] == year_month_day{year{2024}, month{11}, day{28}});
+        REQUIRE(holidays[2] == year_month_day{year{2024}, month{12}, day{25}});
     }
 }
 
 TEST_CASE("HolidayCalendar with mixed explicit and rule-based", "[HolidayCalendar]") {
     datelib::HolidayCalendar calendar;
 
-    calendar.addHoliday(datelib::Date(2024, 7, 4));                                  // Explicit
-    calendar.addRule(std::make_unique<datelib::FixedDateRule>("Christmas", 12, 25)); // Rule
+    calendar.addHoliday("July 4th 2024", year_month_day{year{2024}, month{7}, day{4}});
+    calendar.addRule(std::make_unique<datelib::FixedDateRule>("Christmas", 12, 25));
 
     SECTION("Both types are recognized") {
-        REQUIRE(calendar.isHoliday(datelib::Date(2024, 7, 4)));
-        REQUIRE(calendar.isHoliday(datelib::Date(2024, 12, 25)));
+        REQUIRE(calendar.isHoliday(year_month_day{year{2024}, month{7}, day{4}}));
+        REQUIRE(calendar.isHoliday(year_month_day{year{2024}, month{12}, day{25}}));
     }
 
     SECTION("Get all holidays") {
         auto holidays = calendar.getHolidays(2024);
         REQUIRE(holidays.size() == 2);
-        REQUIRE(holidays[0] == datelib::Date(2024, 7, 4));
-        REQUIRE(holidays[1] == datelib::Date(2024, 12, 25));
+        REQUIRE(holidays[0] == year_month_day{year{2024}, month{7}, day{4}});
+        REQUIRE(holidays[1] == year_month_day{year{2024}, month{12}, day{25}});
     }
 }
 
@@ -83,27 +85,27 @@ TEST_CASE("HolidayCalendar getHolidayNames", "[HolidayCalendar]") {
     calendar.addRule(std::make_unique<datelib::FixedDateRule>("Boxing Day", 12, 26));
 
     SECTION("Get name for holiday") {
-        auto names = calendar.getHolidayNames(datelib::Date(2024, 12, 25));
+        auto names = calendar.getHolidayNames(year_month_day{year{2024}, month{12}, day{25}});
         REQUIRE(names.size() == 1);
         REQUIRE(names[0] == "Christmas");
     }
 
     SECTION("Get empty list for non-holiday") {
-        auto names = calendar.getHolidayNames(datelib::Date(2024, 12, 24));
+        auto names = calendar.getHolidayNames(year_month_day{year{2024}, month{12}, day{24}});
         REQUIRE(names.empty());
     }
 }
 
 TEST_CASE("HolidayCalendar copy operations", "[HolidayCalendar]") {
     datelib::HolidayCalendar calendar1;
-    calendar1.addHoliday(datelib::Date(2024, 7, 4));
+    calendar1.addHoliday("July 4th", year_month_day{year{2024}, month{7}, day{4}});
     calendar1.addRule(std::make_unique<datelib::FixedDateRule>("Christmas", 12, 25));
 
     SECTION("Copy constructor") {
         datelib::HolidayCalendar calendar2(calendar1);
 
-        REQUIRE(calendar2.isHoliday(datelib::Date(2024, 7, 4)));
-        REQUIRE(calendar2.isHoliday(datelib::Date(2024, 12, 25)));
+        REQUIRE(calendar2.isHoliday(year_month_day{year{2024}, month{7}, day{4}}));
+        REQUIRE(calendar2.isHoliday(year_month_day{year{2024}, month{12}, day{25}}));
 
         auto holidays = calendar2.getHolidays(2024);
         REQUIRE(holidays.size() == 2);
@@ -113,8 +115,8 @@ TEST_CASE("HolidayCalendar copy operations", "[HolidayCalendar]") {
         datelib::HolidayCalendar calendar2;
         calendar2 = calendar1;
 
-        REQUIRE(calendar2.isHoliday(datelib::Date(2024, 7, 4)));
-        REQUIRE(calendar2.isHoliday(datelib::Date(2024, 12, 25)));
+        REQUIRE(calendar2.isHoliday(year_month_day{year{2024}, month{7}, day{4}}));
+        REQUIRE(calendar2.isHoliday(year_month_day{year{2024}, month{12}, day{25}}));
 
         auto holidays = calendar2.getHolidays(2024);
         REQUIRE(holidays.size() == 2);
@@ -123,15 +125,15 @@ TEST_CASE("HolidayCalendar copy operations", "[HolidayCalendar]") {
 
 TEST_CASE("HolidayCalendar clear", "[HolidayCalendar]") {
     datelib::HolidayCalendar calendar;
-    calendar.addHoliday(datelib::Date(2024, 7, 4));
+    calendar.addHoliday("July 4th", year_month_day{year{2024}, month{7}, day{4}});
     calendar.addRule(std::make_unique<datelib::FixedDateRule>("Christmas", 12, 25));
 
-    REQUIRE(calendar.isHoliday(datelib::Date(2024, 7, 4)));
+    REQUIRE(calendar.isHoliday(year_month_day{year{2024}, month{7}, day{4}}));
 
     calendar.clear();
 
-    REQUIRE_FALSE(calendar.isHoliday(datelib::Date(2024, 7, 4)));
-    REQUIRE_FALSE(calendar.isHoliday(datelib::Date(2024, 12, 25)));
+    REQUIRE_FALSE(calendar.isHoliday(year_month_day{year{2024}, month{7}, day{4}}));
+    REQUIRE_FALSE(calendar.isHoliday(year_month_day{year{2024}, month{12}, day{25}}));
 
     auto holidays = calendar.getHolidays(2024);
     REQUIRE(holidays.empty());
@@ -147,32 +149,27 @@ TEST_CASE("Real-world US holidays example", "[HolidayCalendar]") {
     usHolidays.addRule(std::make_unique<datelib::FixedDateRule>("Christmas", 12, 25));
 
     // Nth weekday holidays
-    usHolidays.addRule(std::make_unique<datelib::NthWeekdayRule>("Martin Luther King Jr. Day", 1, 1,
-                                                                 3)); // 3rd Monday in January
-    usHolidays.addRule(std::make_unique<datelib::NthWeekdayRule>("Presidents' Day", 2, 1,
-                                                                 3)); // 3rd Monday in February
     usHolidays.addRule(
-        std::make_unique<datelib::NthWeekdayRule>("Memorial Day", 5, 1, -1)); // Last Monday in May
-    usHolidays.addRule(
-        std::make_unique<datelib::NthWeekdayRule>("Labor Day", 9, 1, 1)); // 1st Monday in September
-    usHolidays.addRule(std::make_unique<datelib::NthWeekdayRule>("Columbus Day", 10, 1,
-                                                                 2)); // 2nd Monday in October
-    usHolidays.addRule(std::make_unique<datelib::NthWeekdayRule>("Thanksgiving", 11, 4,
-                                                                 4)); // 4th Thursday in November
+        std::make_unique<datelib::NthWeekdayRule>("Martin Luther King Jr. Day", 1, 1, 3));
+    usHolidays.addRule(std::make_unique<datelib::NthWeekdayRule>("Presidents' Day", 2, 1, 3));
+    usHolidays.addRule(std::make_unique<datelib::NthWeekdayRule>("Memorial Day", 5, 1, -1));
+    usHolidays.addRule(std::make_unique<datelib::NthWeekdayRule>("Labor Day", 9, 1, 1));
+    usHolidays.addRule(std::make_unique<datelib::NthWeekdayRule>("Columbus Day", 10, 1, 2));
+    usHolidays.addRule(std::make_unique<datelib::NthWeekdayRule>("Thanksgiving", 11, 4, 4));
 
     SECTION("Verify 2024 holidays") {
         auto holidays2024 = usHolidays.getHolidays(2024);
         REQUIRE(holidays2024.size() == 10);
 
         // Spot check a few
-        REQUIRE(usHolidays.isHoliday(datelib::Date(2024, 1, 1)));   // New Year
-        REQUIRE(usHolidays.isHoliday(datelib::Date(2024, 1, 15)));  // MLK Day (3rd Mon in Jan)
-        REQUIRE(usHolidays.isHoliday(datelib::Date(2024, 11, 28))); // Thanksgiving
-        REQUIRE(usHolidays.isHoliday(datelib::Date(2024, 12, 25))); // Christmas
+        REQUIRE(usHolidays.isHoliday(year_month_day{year{2024}, month{1}, day{1}}));
+        REQUIRE(usHolidays.isHoliday(year_month_day{year{2024}, month{1}, day{15}}));
+        REQUIRE(usHolidays.isHoliday(year_month_day{year{2024}, month{11}, day{28}}));
+        REQUIRE(usHolidays.isHoliday(year_month_day{year{2024}, month{12}, day{25}}));
     }
 
     SECTION("Get holiday names") {
-        auto names = usHolidays.getHolidayNames(datelib::Date(2024, 11, 28));
+        auto names = usHolidays.getHolidayNames(year_month_day{year{2024}, month{11}, day{28}});
         REQUIRE(names.size() == 1);
         REQUIRE(names[0] == "Thanksgiving");
     }

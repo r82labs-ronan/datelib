@@ -4,8 +4,9 @@
 
 namespace datelib {
 
-HolidayCalendar::HolidayCalendar(const HolidayCalendar& other)
-    : explicitHolidays_(other.explicitHolidays_) {
+using namespace std::chrono;
+
+HolidayCalendar::HolidayCalendar(const HolidayCalendar& other) {
     // Deep copy the rules
     rules_.reserve(other.rules_.size());
     for (const auto& rule : other.rules_) {
@@ -15,8 +16,6 @@ HolidayCalendar::HolidayCalendar(const HolidayCalendar& other)
 
 HolidayCalendar& HolidayCalendar::operator=(const HolidayCalendar& other) {
     if (this != &other) {
-        explicitHolidays_ = other.explicitHolidays_;
-
         // Deep copy the rules
         rules_.clear();
         rules_.reserve(other.rules_.size());
@@ -27,8 +26,8 @@ HolidayCalendar& HolidayCalendar::operator=(const HolidayCalendar& other) {
     return *this;
 }
 
-void HolidayCalendar::addHoliday(const Date& date) {
-    explicitHolidays_.insert(date);
+void HolidayCalendar::addHoliday(const std::string& name, const year_month_day& date) {
+    rules_.push_back(std::make_unique<ExplicitDateRule>(name, date));
 }
 
 void HolidayCalendar::addRule(std::unique_ptr<HolidayRule> rule) {
@@ -37,17 +36,11 @@ void HolidayCalendar::addRule(std::unique_ptr<HolidayRule> rule) {
     }
 }
 
-bool HolidayCalendar::isHoliday(const Date& date) const {
-    // Check explicit holidays
-    if (explicitHolidays_.find(date) != explicitHolidays_.end()) {
-        return true;
-    }
-
-    // Check rule-based holidays
-    int year = date.year();
+bool HolidayCalendar::isHoliday(const year_month_day& date) const {
+    int year = static_cast<int>(date.year());
     for (const auto& rule : rules_) {
         try {
-            Date ruleDate = rule->calculateDate(year);
+            year_month_day ruleDate = rule->calculateDate(year);
             if (ruleDate == date) {
                 return true;
             }
@@ -60,44 +53,34 @@ bool HolidayCalendar::isHoliday(const Date& date) const {
     return false;
 }
 
-std::vector<Date> HolidayCalendar::getHolidays(int year) const {
-    std::set<Date> holidays;
+std::vector<year_month_day> HolidayCalendar::getHolidays(int year) const {
+    std::vector<year_month_day> holidays;
 
-    // Add explicit holidays for this year
-    for (const auto& date : explicitHolidays_) {
-        if (date.year() == year) {
-            holidays.insert(date);
-        }
-    }
-
-    // Add rule-based holidays
+    // Collect all holidays from rules
     for (const auto& rule : rules_) {
         try {
-            Date ruleDate = rule->calculateDate(year);
-            holidays.insert(ruleDate);
+            year_month_day ruleDate = rule->calculateDate(year);
+            holidays.push_back(ruleDate);
         } catch (...) {
             // Rule might not be applicable for this year, skip it
             continue;
         }
     }
 
-    // Convert set to vector (already sorted)
-    return std::vector<Date>(holidays.begin(), holidays.end());
+    // Sort and remove duplicates
+    std::sort(holidays.begin(), holidays.end());
+    holidays.erase(std::unique(holidays.begin(), holidays.end()), holidays.end());
+
+    return holidays;
 }
 
-std::vector<std::string> HolidayCalendar::getHolidayNames(const Date& date) const {
+std::vector<std::string> HolidayCalendar::getHolidayNames(const year_month_day& date) const {
     std::vector<std::string> names;
 
-    // Check if it's an explicit holiday (no name stored for these)
-    if (explicitHolidays_.find(date) != explicitHolidays_.end()) {
-        names.push_back("Custom Holiday");
-    }
-
-    // Check rule-based holidays
-    int year = date.year();
+    int year = static_cast<int>(date.year());
     for (const auto& rule : rules_) {
         try {
-            Date ruleDate = rule->calculateDate(year);
+            year_month_day ruleDate = rule->calculateDate(year);
             if (ruleDate == date) {
                 names.push_back(rule->getName());
             }
@@ -111,7 +94,6 @@ std::vector<std::string> HolidayCalendar::getHolidayNames(const Date& date) cons
 }
 
 void HolidayCalendar::clear() {
-    explicitHolidays_.clear();
     rules_.clear();
 }
 
