@@ -1,6 +1,7 @@
 #include "datelib/date.h"
 
 #include "datelib/HolidayCalendar.h"
+#include "datelib/exceptions.h"
 
 namespace datelib {
 
@@ -119,7 +120,7 @@ adjust(const std::chrono::year_month_day& date, BusinessDayConvention convention
 
     // This should never be reached as all enum values are handled above
     // If we reach here, it's a logic error (e.g., uninitialized enum)
-    throw std::logic_error("Unhandled BusinessDayConvention in adjust()");
+    throw UnhandledEnumException("Unhandled BusinessDayConvention in adjust()");
 }
 
 } // namespace datelib
