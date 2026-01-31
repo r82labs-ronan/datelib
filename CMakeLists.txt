@@ -52,7 +52,7 @@ add_subdirectory(tests)
 find_program(CLANG_FORMAT clang-format)
 if(CLANG_FORMAT)
     # Collect all source files
-    file(GLOB_RECURSE ALL_SOURCE_FILES
+    file(GLOB_RECURSE ALL_SOURCE_FILES CONFIGURE_DEPENDS
         ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/*.h
         ${CMAKE_CURRENT_SOURCE_DIR}/include/*.h
