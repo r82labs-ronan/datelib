@@ -38,7 +38,7 @@ set_target_properties(
     VERSION ${PROJECT_VERSION}
     SOVERSION 1
     PUBLIC_HEADER
-    "include/datelib/date.h;include/datelib/HolidayRule.h;include/datelib/HolidayCalendar.h"
+    "include/datelib/date.h;include/datelib/date_util.h;include/datelib/HolidayRule.h;include/datelib/HolidayCalendar.h"
 )
 
 # Enable testing
