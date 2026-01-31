@@ -117,6 +117,10 @@ This project uses [SonarCloud](https://sonarcloud.io) for continuous code qualit
    - On pull requests from the same repository
    - View results at `https://sonarcloud.io/project/overview?id=your_project_key`
 
+**Version Synchronization:**
+
+The project version in `sonar-project.properties` is automatically synchronized with `CMakeLists.txt` during the release process. When a release is prepared using the "Prepare Release" workflow, both files are updated together, ensuring the SonarQube project version stays in sync with the library version.
+
 **For Contributors:**
 
 The SonarQube job will automatically skip if the `SONAR_TOKEN` secret is not available (e.g., for forks). Your pull requests will still pass CI checks without SonarQube analysis.
