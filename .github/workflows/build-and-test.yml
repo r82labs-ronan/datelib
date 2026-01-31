@@ -45,12 +45,12 @@ jobs:
       run: |
         mkdir -p build
         cd build
-        cmake -DCMAKE_BUILD_TYPE=Debug -DENABLE_COVERAGE=ON ..
+        cmake -DENABLE_COVERAGE=ON ..
 
     - name: Build
       run: |
         cd build
-        cmake --build .
+        cmake --build . --config Release
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
