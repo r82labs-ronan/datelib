@@ -1,5 +1,7 @@
 #pragma once
 
+#include "datelib/date_util.h"
+
 #include <chrono>
 #include <unordered_set>
 
@@ -7,13 +9,6 @@ namespace datelib {
 
 // Forward declaration
 class HolidayCalendar;
-
-// Hash function for std::chrono::weekday to use in unordered_set
-struct WeekdayHash {
-    std::size_t operator()(const std::chrono::weekday& wd) const {
-        return std::hash<unsigned>{}(wd.c_encoding());
-    }
-};
 
 /**
  * @brief Check if a given date is a business day
