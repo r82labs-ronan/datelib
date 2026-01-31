@@ -1,6 +1,7 @@
 #include "datelib/period.h"
 
 #include <cctype>
+#include <format>
 #include <stdexcept>
 
 namespace datelib {
@@ -27,13 +28,14 @@ Period Period::parse(const std::string& period_str) {
 
     // We need at least one digit
     if (numeric_end == (has_sign ? 1 : 0)) {
-        throw std::invalid_argument("Period string must contain a numeric value: " + period_str);
+        throw std::invalid_argument(
+            std::format("Period string must contain a numeric value: {}", period_str));
     }
 
     // We need exactly one character after the number for the unit
     if (numeric_end + 1 != period_str.length()) {
-        throw std::invalid_argument(
-            "Period string must end with a single unit character (D/W/M/Y): " + period_str);
+        throw std::invalid_argument(std::format(
+            "Period string must end with a single unit character (D/W/M/Y): {}", period_str));
     }
 
     // Parse the numeric value
@@ -41,7 +43,8 @@ Period Period::parse(const std::string& period_str) {
     try {
         value = std::stoi(period_str.substr(0, numeric_end));
     } catch (const std::exception&) {
-        throw std::invalid_argument("Invalid numeric value in period string: " + period_str);
+        throw std::invalid_argument(
+            std::format("Invalid numeric value in period string: {}", period_str));
     }
 
     // Parse the unit character (case-insensitive)
@@ -62,9 +65,9 @@ Period Period::parse(const std::string& period_str) {
         unit = Unit::Years;
         break;
     default:
-        throw std::invalid_argument("Invalid period unit '" +
-                                    std::string(1, period_str[numeric_end]) +
-                                    "'. Must be D, W, M, or Y: " + period_str);
+        throw std::invalid_argument(
+            std::format("Invalid period unit '{}'. Must be D, W, M, or Y: {}",
+                        period_str[numeric_end], period_str));
     }
 
     return Period(value, unit);

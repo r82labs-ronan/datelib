@@ -664,8 +664,10 @@ TEST_CASE("Period::parse with invalid strings", "[period][edge_cases]") {
     }
 
     SECTION("Invalid unit") {
-        REQUIRE_THROWS_WITH(datelib::Period::parse("5X"), Catch::Contains("Invalid period unit"));
-        REQUIRE_THROWS_WITH(datelib::Period::parse("5H"), Catch::Contains("Invalid period unit"));
+        REQUIRE_THROWS_WITH(datelib::Period::parse("5X"),
+                            "Invalid period unit 'X'. Must be D, W, M, or Y: 5X");
+        REQUIRE_THROWS_WITH(datelib::Period::parse("5H"),
+                            "Invalid period unit 'H'. Must be D, W, M, or Y: 5H");
     }
 
     SECTION("Multiple unit characters") {
