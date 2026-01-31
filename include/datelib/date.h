@@ -1,23 +1,15 @@
 #pragma once
 
 #include "datelib/date_util.h"
+#include "datelib/exceptions.h"
 
 #include <chrono>
-#include <stdexcept>
 #include <unordered_set>
 
 namespace datelib {
 
 // Forward declaration
 class HolidayCalendar;
-
-/**
- * @brief Exception thrown when unable to find a business day within a reasonable range
- */
-class BusinessDaySearchException : public std::runtime_error {
-  public:
-    explicit BusinessDaySearchException(const std::string& message) : std::runtime_error(message) {}
-};
 
 /**
  * @brief Business day adjustment conventions for date rolling
