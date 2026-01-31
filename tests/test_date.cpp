@@ -6,11 +6,6 @@
 
 using namespace std::chrono;
 
-TEST_CASE("hello_world returns greeting", "[hello]") {
-    std::string result = datelib::hello_world();
-    REQUIRE(result == "Hello, World!");
-}
-
 TEST_CASE("isBusinessDay with empty calendar", "[isBusinessDay]") {
     datelib::HolidayCalendar emptyCalendar;
 
@@ -247,5 +242,55 @@ TEST_CASE("isBusinessDay with holidays falling on weekends", "[isBusinessDay][ed
         // December 25, 2022 was a Sunday (Christmas)
         REQUIRE_FALSE(
             datelib::isBusinessDay(year_month_day{year{2022}, month{12}, day{25}}, calendar));
+    }
+}
+
+TEST_CASE("isBusinessDay with custom weekend days", "[isBusinessDay][configurable]") {
+    datelib::HolidayCalendar calendar;
+
+    SECTION("Friday-Saturday weekend (Middle East)") {
+        // In some Middle Eastern countries, the weekend is Friday-Saturday
+        // Sunday=0, Monday=1, Tuesday=2, Wednesday=3, Thursday=4, Friday=5, Saturday=6
+        std::unordered_set<unsigned> friday_saturday_weekend = {5u, 6u};
+
+        // Thursday, January 4, 2024 should be a business day
+        REQUIRE(datelib::isBusinessDay(year_month_day{year{2024}, month{1}, day{4}}, calendar,
+                                       friday_saturday_weekend));
+
+        // Friday, January 5, 2024 should NOT be a business day (weekend)
+        REQUIRE_FALSE(datelib::isBusinessDay(year_month_day{year{2024}, month{1}, day{5}}, calendar,
+                                             friday_saturday_weekend));
+
+        // Saturday, January 6, 2024 should NOT be a business day (weekend)
+        REQUIRE_FALSE(datelib::isBusinessDay(year_month_day{year{2024}, month{1}, day{6}}, calendar,
+                                             friday_saturday_weekend));
+
+        // Sunday, January 7, 2024 should be a business day
+        REQUIRE(datelib::isBusinessDay(year_month_day{year{2024}, month{1}, day{7}}, calendar,
+                                       friday_saturday_weekend));
+    }
+
+    SECTION("Sunday-only weekend") {
+        // Some countries have only Sunday as weekend
+        std::unordered_set<unsigned> sunday_only_weekend = {0u};
+
+        // Saturday, January 6, 2024 should be a business day
+        REQUIRE(datelib::isBusinessDay(year_month_day{year{2024}, month{1}, day{6}}, calendar,
+                                       sunday_only_weekend));
+
+        // Sunday, January 7, 2024 should NOT be a business day (weekend)
+        REQUIRE_FALSE(datelib::isBusinessDay(year_month_day{year{2024}, month{1}, day{7}}, calendar,
+                                             sunday_only_weekend));
+    }
+
+    SECTION("No weekend days (seven-day work week)") {
+        // Empty set means no weekend days
+        std::unordered_set<unsigned> no_weekend = {};
+
+        // All days should be business days (if not holidays)
+        REQUIRE(datelib::isBusinessDay(year_month_day{year{2024}, month{1}, day{6}}, calendar,
+                                       no_weekend)); // Saturday
+        REQUIRE(datelib::isBusinessDay(year_month_day{year{2024}, month{1}, day{7}}, calendar,
+                                       no_weekend)); // Sunday
     }
 }

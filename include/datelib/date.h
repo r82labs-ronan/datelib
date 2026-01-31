@@ -1,7 +1,7 @@
 #pragma once
 
 #include <chrono>
-#include <string>
+#include <unordered_set>
 
 namespace datelib {
 
@@ -9,18 +9,14 @@ namespace datelib {
 class HolidayCalendar;
 
 /**
- * @brief Returns a hello world message
- * @return A greeting string
- */
-std::string hello_world();
-
-/**
  * @brief Check if a given date is a business day
  * @param date The date to check
  * @param calendar The holiday calendar to use for checking holidays
- * @return true if the date is a weekday (Monday-Friday) and not a holiday, false otherwise
+ * @param weekend_days The set of weekdays considered as weekend (defaults to Saturday and Sunday)
+ * @return true if the date is not a weekend day and not a holiday, false otherwise
  * @throws std::invalid_argument if the date is invalid (e.g., February 30th)
  */
-bool isBusinessDay(const std::chrono::year_month_day& date, const HolidayCalendar& calendar);
+bool isBusinessDay(const std::chrono::year_month_day& date, const HolidayCalendar& calendar,
+                   const std::unordered_set<unsigned>& weekend_days = {6u, 0u});
 
 } // namespace datelib
