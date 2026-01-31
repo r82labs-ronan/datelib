@@ -1,6 +1,7 @@
 #include "datelib/HolidayRule.h"
 
 #include <stdexcept>
+#include <utility>
 
 namespace datelib {
 
@@ -87,7 +88,7 @@ NthWeekdayRule::NthWeekdayRule(std::string name, unsigned month, unsigned weekda
     if (weekday_val > MAX_WEEKDAY) {
         throw std::invalid_argument("Weekday must be between 0 and 6");
     }
-    int occ_val = static_cast<int>(occurrence);
+    int occ_val = std::to_underlying(occurrence);
     if (occ_val == 0 || occ_val < -1 || occ_val > 5) {
         throw std::invalid_argument("Occurrence must be First through Fifth or Last");
     }
@@ -95,7 +96,7 @@ NthWeekdayRule::NthWeekdayRule(std::string name, unsigned month, unsigned weekda
 
 bool NthWeekdayRule::appliesTo(int year) const {
     // For Last occurrence, it always applies
-    int occ_val = static_cast<int>(occurrence_);
+    int occ_val = std::to_underlying(occurrence_);
     if (occ_val < 0) {
         return true;
     }
@@ -121,7 +122,7 @@ year_month_day NthWeekdayRule::calculateDate(int year) const {
     sys_days first_sd{first_of_month};
     weekday first_weekday{first_sd};
 
-    int occ_val = static_cast<int>(occurrence_);
+    int occ_val = std::to_underlying(occurrence_);
     if (occ_val > 0) {
         // Find the Nth occurrence of the target weekday
         // Calculate days to add to reach first occurrence of target weekday
