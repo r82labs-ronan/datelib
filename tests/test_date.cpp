@@ -114,17 +114,17 @@ TEST_CASE("isBusinessDay with explicit date holidays", "[isBusinessDay]") {
     datelib::HolidayCalendar calendar;
 
     // Add a one-time holiday
-    calendar.addHoliday("Company Anniversary", year_month_day{year{2024}, month{6}, day{15}});
+    calendar.addHoliday("Company Anniversary", year_month_day{year{2024}, month{6}, day{13}});
 
     SECTION("Explicit holiday on weekday is not a business day") {
-        // Saturday, June 15, 2024 (Company Anniversary)
+        // Thursday, June 13, 2024 (Company Anniversary)
         REQUIRE_FALSE(
-            datelib::isBusinessDay(year_month_day{year{2024}, month{6}, day{15}}, calendar));
+            datelib::isBusinessDay(year_month_day{year{2024}, month{6}, day{13}}, calendar));
     }
 
     SECTION("Same date in different year is a business day") {
-        // Monday, June 15, 2026 (not a holiday)
-        REQUIRE(datelib::isBusinessDay(year_month_day{year{2026}, month{6}, day{15}}, calendar));
+        // Friday, June 13, 2025 (not a holiday)
+        REQUIRE(datelib::isBusinessDay(year_month_day{year{2025}, month{6}, day{13}}, calendar));
     }
 }
 
