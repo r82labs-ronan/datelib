@@ -28,7 +28,7 @@ std::unique_ptr<HolidayRule> ExplicitDateRule::clone() const {
 
 // FixedDateRule implementation
 FixedDateRule::FixedDateRule(std::string name, unsigned month, unsigned day)
-    : name_(std::move(name)), month_(month), day_(day) {
+    : name_(std::move(name)), month_{month}, day_{day} {
     if (month < 1 || month > 12) {
         throw std::invalid_argument("Month must be between 1 and 12");
     }
@@ -53,7 +53,7 @@ std::unique_ptr<HolidayRule> FixedDateRule::clone() const {
 // NthWeekdayRule implementation
 NthWeekdayRule::NthWeekdayRule(std::string name, unsigned month, unsigned weekday_val,
                                int occurrence)
-    : name_(std::move(name)), month_(month), weekday_(weekday_val), occurrence_(occurrence) {
+    : name_(std::move(name)), month_{month}, weekday_{weekday_val}, occurrence_(occurrence) {
     if (month < 1 || month > 12) {
         throw std::invalid_argument("Month must be between 1 and 12");
     }
