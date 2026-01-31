@@ -47,6 +47,9 @@ include(cmake/Catch2Setup.cmake)
 # Add tests subdirectory
 add_subdirectory(tests)
 
+# Code formatting targets
+include(cmake/ClangFormat.cmake)
+
 # Installation rules
 install(
   TARGETS datelib
