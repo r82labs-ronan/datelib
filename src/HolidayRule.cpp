@@ -1,5 +1,6 @@
 #include "datelib/HolidayRule.h"
 
+#include "datelib/exceptions.h"
 #include <stdexcept>
 
 namespace datelib {
@@ -41,7 +42,7 @@ year_month_day ExplicitDateRule::calculateDate(int year) const {
     if (static_cast<int>(date_.year()) == year) {
         return date_;
     }
-    throw std::runtime_error("Explicit date does not exist in this year");
+    throw DateNotInYearException("Explicit date does not exist in this year");
 }
 
 std::unique_ptr<HolidayRule> ExplicitDateRule::clone() const {
@@ -67,7 +68,7 @@ bool FixedDateRule::appliesTo(int year) const {
 year_month_day FixedDateRule::calculateDate(int year) const {
     year_month_day ymd{std::chrono::year{year}, month_, day_};
     if (!ymd.ok()) {
-        throw std::runtime_error("Invalid date for this year");
+        throw InvalidDateException("Invalid date for this year");
     }
     return ymd;
 }
@@ -134,7 +135,7 @@ year_month_day NthWeekdayRule::calculateDate(int year) const {
 
         // Verify we're still in the same month
         if (result.month() != month_) {
-            throw std::runtime_error("Requested occurrence does not exist in this month");
+            throw OccurrenceNotFoundException("Requested occurrence does not exist in this month");
         }
 
         return result;
