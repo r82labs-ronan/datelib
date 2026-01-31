@@ -56,7 +56,8 @@ std::vector<year_month_day> HolidayCalendar::getHolidays(int year) const {
 
     // Sort and remove duplicates
     std::ranges::sort(holidays);
-    holidays.erase(std::unique(holidays.begin(), holidays.end()), holidays.end());
+    auto [new_end, end] = std::ranges::unique(holidays);
+    holidays.erase(new_end, end);
 
     return holidays;
 } // LCOV_EXCL_LINE
