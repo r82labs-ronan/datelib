@@ -1,6 +1,7 @@
 #pragma once
 
 #include "datelib/date_util.h"
+#include "datelib/exceptions.h"
 
 #include <chrono>
 #include <unordered_set>
@@ -50,9 +51,10 @@ enum class BusinessDayConvention {
  * @return true if the date is not a weekend day and not a holiday, false otherwise
  * @throws std::invalid_argument if the date is invalid (e.g., February 30th)
  */
-bool isBusinessDay(const std::chrono::year_month_day& date, const HolidayCalendar& calendar,
-                   const std::unordered_set<std::chrono::weekday, WeekdayHash>& weekend_days = {
-                       std::chrono::Saturday, std::chrono::Sunday});
+[[nodiscard]] bool
+isBusinessDay(const std::chrono::year_month_day& date, const HolidayCalendar& calendar,
+              const std::unordered_set<std::chrono::weekday, WeekdayHash>& weekend_days = {
+                  std::chrono::Saturday, std::chrono::Sunday});
 
 /**
  * @brief Adjust a date according to a business day convention
@@ -62,6 +64,7 @@ bool isBusinessDay(const std::chrono::year_month_day& date, const HolidayCalenda
  * @param weekend_days The set of weekdays considered as weekend (defaults to Saturday and Sunday)
  * @return The adjusted date according to the specified convention
  * @throws std::invalid_argument if the input date is invalid
+ * @throws BusinessDaySearchException if unable to find a business day within reasonable range
  *
  * This function adjusts non-business days according to market conventions:
  * - Following: Moves to the next business day
@@ -72,7 +75,7 @@ bool isBusinessDay(const std::chrono::year_month_day& date, const HolidayCalenda
  *   if it does, moves to the next business day
  * - Unadjusted: Returns the date unchanged
  */
-std::chrono::year_month_day
+[[nodiscard]] std::chrono::year_month_day
 adjust(const std::chrono::year_month_day& date, BusinessDayConvention convention,
        const HolidayCalendar& calendar,
        const std::unordered_set<std::chrono::weekday, WeekdayHash>& weekend_days = {

@@ -4,6 +4,55 @@
 
 namespace datelib {
 
+namespace {
+// Maximum number of days to search for a business day (one year)
+constexpr int MAX_DAYS_TO_SEARCH = 366;
+
+/**
+ * @brief Move forward to the next business day
+ */
+std::chrono::year_month_day
+moveToNextBusinessDay(const std::chrono::year_month_day& start, const HolidayCalendar& calendar,
+                      const std::unordered_set<std::chrono::weekday, WeekdayHash>& weekend_days) {
+    auto adjusted = std::chrono::sys_days{start};
+    std::chrono::year_month_day adjusted_ymd{adjusted};
+    int iterations = 0;
+
+    while (!isBusinessDay(adjusted_ymd, calendar, weekend_days)) {
+        if (++iterations > MAX_DAYS_TO_SEARCH) {
+            throw BusinessDaySearchException(
+                "Unable to find next business day within reasonable range");
+        }
+        adjusted += std::chrono::days{1};
+        adjusted_ymd = std::chrono::year_month_day{adjusted};
+    }
+
+    return adjusted_ymd;
+}
+
+/**
+ * @brief Move backward to the previous business day
+ */
+std::chrono::year_month_day moveToPreviousBusinessDay(
+    const std::chrono::year_month_day& start, const HolidayCalendar& calendar,
+    const std::unordered_set<std::chrono::weekday, WeekdayHash>& weekend_days) {
+    auto adjusted = std::chrono::sys_days{start};
+    std::chrono::year_month_day adjusted_ymd{adjusted};
+    int iterations = 0;
+
+    while (!isBusinessDay(adjusted_ymd, calendar, weekend_days)) {
+        if (++iterations > MAX_DAYS_TO_SEARCH) {
+            throw BusinessDaySearchException(
+                "Unable to find previous business day within reasonable range");
+        }
+        adjusted -= std::chrono::days{1};
+        adjusted_ymd = std::chrono::year_month_day{adjusted};
+    }
+
+    return adjusted_ymd;
+}
+} // namespace
+
 bool isBusinessDay(const std::chrono::year_month_day& date, const HolidayCalendar& calendar,
                    const std::unordered_set<std::chrono::weekday, WeekdayHash>& weekend_days) {
     // Validate the date is well-formed
@@ -37,74 +86,33 @@ adjust(const std::chrono::year_month_day& date, BusinessDayConvention convention
     }
 
     // Apply the convention
+    using enum BusinessDayConvention;
     switch (convention) {
-    case BusinessDayConvention::Following: {
-        // Move forward until we find a business day
-        auto adjusted = std::chrono::sys_days{date};
-        std::chrono::year_month_day adjusted_ymd{adjusted};
-        while (!isBusinessDay(adjusted_ymd, calendar, weekend_days)) {
-            adjusted += std::chrono::days{1};
-            adjusted_ymd = std::chrono::year_month_day{adjusted};
-        }
-        return adjusted_ymd;
-    }
+    case Following:
+        return moveToNextBusinessDay(date, calendar, weekend_days);
 
-    case BusinessDayConvention::ModifiedFollowing: {
-        // Move forward until we find a business day
-        auto adjusted = std::chrono::sys_days{date};
-        std::chrono::year_month_day adjusted_ymd{adjusted};
-        std::chrono::month original_month = date.month();
-        while (!isBusinessDay(adjusted_ymd, calendar, weekend_days)) {
-            adjusted += std::chrono::days{1};
-            adjusted_ymd = std::chrono::year_month_day{adjusted};
-        }
-
+    case ModifiedFollowing: {
+        auto adjusted = moveToNextBusinessDay(date, calendar, weekend_days);
         // If we crossed into a new month, go backward instead
-        if (adjusted_ymd.month() != original_month) {
-            adjusted = std::chrono::sys_days{date};
-            adjusted_ymd = std::chrono::year_month_day{adjusted};
-            while (!isBusinessDay(adjusted_ymd, calendar, weekend_days)) {
-                adjusted -= std::chrono::days{1};
-                adjusted_ymd = std::chrono::year_month_day{adjusted};
-            }
+        if (adjusted.month() != date.month()) {
+            adjusted = moveToPreviousBusinessDay(date, calendar, weekend_days);
         }
-        return adjusted_ymd;
+        return adjusted;
     }
 
-    case BusinessDayConvention::Preceding: {
-        // Move backward until we find a business day
-        auto adjusted = std::chrono::sys_days{date};
-        std::chrono::year_month_day adjusted_ymd{adjusted};
-        while (!isBusinessDay(adjusted_ymd, calendar, weekend_days)) {
-            adjusted -= std::chrono::days{1};
-            adjusted_ymd = std::chrono::year_month_day{adjusted};
-        }
-        return adjusted_ymd;
-    }
+    case Preceding:
+        return moveToPreviousBusinessDay(date, calendar, weekend_days);
 
-    case BusinessDayConvention::ModifiedPreceding: {
-        // Move backward until we find a business day
-        auto adjusted = std::chrono::sys_days{date};
-        std::chrono::year_month_day adjusted_ymd{adjusted};
-        std::chrono::month original_month = date.month();
-        while (!isBusinessDay(adjusted_ymd, calendar, weekend_days)) {
-            adjusted -= std::chrono::days{1};
-            adjusted_ymd = std::chrono::year_month_day{adjusted};
-        }
-
+    case ModifiedPreceding: {
+        auto adjusted = moveToPreviousBusinessDay(date, calendar, weekend_days);
         // If we crossed into a different month, go forward instead
-        if (adjusted_ymd.month() != original_month) {
-            adjusted = std::chrono::sys_days{date};
-            adjusted_ymd = std::chrono::year_month_day{adjusted};
-            while (!isBusinessDay(adjusted_ymd, calendar, weekend_days)) {
-                adjusted += std::chrono::days{1};
-                adjusted_ymd = std::chrono::year_month_day{adjusted};
-            }
+        if (adjusted.month() != date.month()) {
+            adjusted = moveToNextBusinessDay(date, calendar, weekend_days);
         }
-        return adjusted_ymd;
+        return adjusted;
     }
 
-    case BusinessDayConvention::Unadjusted:
+    case Unadjusted:
         // Return the date unchanged
         return date;
     }
