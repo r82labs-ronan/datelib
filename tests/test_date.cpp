@@ -250,8 +250,8 @@ TEST_CASE("isBusinessDay with custom weekend days", "[isBusinessDay][configurabl
 
     SECTION("Friday-Saturday weekend (Middle East)") {
         // In some Middle Eastern countries, the weekend is Friday-Saturday
-        // Sunday=0, Monday=1, Tuesday=2, Wednesday=3, Thursday=4, Friday=5, Saturday=6
-        std::unordered_set<unsigned> friday_saturday_weekend = {5u, 6u};
+        std::unordered_set<weekday, datelib::WeekdayHash> friday_saturday_weekend = {Friday,
+                                                                                     Saturday};
 
         // Thursday, January 4, 2024 should be a business day
         REQUIRE(datelib::isBusinessDay(year_month_day{year{2024}, month{1}, day{4}}, calendar,
@@ -272,7 +272,7 @@ TEST_CASE("isBusinessDay with custom weekend days", "[isBusinessDay][configurabl
 
     SECTION("Sunday-only weekend") {
         // Some countries have only Sunday as weekend
-        std::unordered_set<unsigned> sunday_only_weekend = {0u};
+        std::unordered_set<weekday, datelib::WeekdayHash> sunday_only_weekend = {Sunday};
 
         // Saturday, January 6, 2024 should be a business day
         REQUIRE(datelib::isBusinessDay(year_month_day{year{2024}, month{1}, day{6}}, calendar,
@@ -285,7 +285,7 @@ TEST_CASE("isBusinessDay with custom weekend days", "[isBusinessDay][configurabl
 
     SECTION("No weekend days (seven-day work week)") {
         // Empty set means no weekend days
-        std::unordered_set<unsigned> no_weekend = {};
+        std::unordered_set<weekday, datelib::WeekdayHash> no_weekend = {};
 
         // All days should be business days (if not holidays)
         REQUIRE(datelib::isBusinessDay(year_month_day{year{2024}, month{1}, day{6}}, calendar,

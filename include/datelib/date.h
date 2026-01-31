@@ -8,6 +8,13 @@ namespace datelib {
 // Forward declaration
 class HolidayCalendar;
 
+// Hash function for std::chrono::weekday to use in unordered_set
+struct WeekdayHash {
+    std::size_t operator()(const std::chrono::weekday& wd) const {
+        return std::hash<unsigned>{}(wd.c_encoding());
+    }
+};
+
 /**
  * @brief Check if a given date is a business day
  * @param date The date to check
@@ -17,6 +24,7 @@ class HolidayCalendar;
  * @throws std::invalid_argument if the date is invalid (e.g., February 30th)
  */
 bool isBusinessDay(const std::chrono::year_month_day& date, const HolidayCalendar& calendar,
-                   const std::unordered_set<unsigned>& weekend_days = {6u, 0u});
+                   const std::unordered_set<std::chrono::weekday, WeekdayHash>& weekend_days = {
+                       std::chrono::Saturday, std::chrono::Sunday});
 
 } // namespace datelib
